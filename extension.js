@@ -42,8 +42,11 @@ function getSelectionText(){
     return txt;
 }
 function convert(selectionLessText){
+    //去除所有空格
     let textWithOutSpace = selectionLessText.replace(/\s+/g,'');
-    return textWithOutSpace;
+    //去除所有注释
+    let textWithOutAnnotation =   textWithOutSpace.replace(/\/\/\w+[;]/g,'');
+    return textWithOutAnnotation;
 }
 exports.activate = activate;
 
