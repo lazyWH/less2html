@@ -8,7 +8,7 @@ function activate(context) {
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "asf" is now active!');
+    console.log('Congratulations, your extension "less2html" is now active!');
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
@@ -42,11 +42,14 @@ function getSelectionText(){
     return txt;
 }
 function convert(selectionLessText){
-    //去除所有空格
-    let textWithOutSpace = selectionLessText.replace(/\s+/g,'');
     //去除所有注释
-    let textWithOutAnnotation =   textWithOutSpace.replace(/\/\/\w+[;]/g,'');
-    return textWithOutAnnotation;
+    let textWithoutAnnotation =   selectionLessText.replace(/\/\/.*\n/g,'');
+    //去除所有空格
+    let textWithoutSpace = textWithoutAnnotation.replace(/\s+/g,'');
+    //去除颜色值，和小数，防止干扰
+    let textWithoutBackdrop = textWithoutSpace.replace(/((#\w+)(?=;))|([.]\d+)/,'');
+    // let classOrId = /[#.]\w+(?={})/.exec(textWithoutBackdrop)
+    return textWithoutBackdrop;
 }
 exports.activate = activate;
 
