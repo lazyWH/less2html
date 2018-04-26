@@ -58,32 +58,32 @@ function getSelectionText() {
 }
 let stack = [];
 function convertToTree(finalSourceText,type,value) {
-    // let regexp = new RegExp(/([.#]\w+(?={))|}/, 'g');
-    // let arr;
-    // let root = {type,value,child:[]};
-    // stack.push(root);
-    // while ((arr = regexp.exec(finalSourceText)) !== null) {
-    //      console.log(`Found ${arr[0]}. Next starts at ${regexp.lastIndex}.`);
-    //     let text = arr[0];
-    //     //如果遇到开标签({)，则入栈这个标签
-    //     if(text!=='}'){
-    //         let node = {type:'id',value:'root',child:[]}
-    //         node.type = getType(text);
-    //         node.value = getValue(text);
-    //         stack.push(node);
-    //     }else{
-    //         let node = stack.pop();
-    //         let parent = stack[stack.length-1];
-    //         parent.child.push(node);
-    //     }
+    //1.class名(.)或id(#)名开头,以{结尾 ,或者less的函数 以.开口，后面带括号\(\) 2.less的&标志开头,以{结尾  3.html标签名 
+     let regexp = new RegExp(/([.#].*?(?={))|(&.*?\w+(?={))|([a-z]+(?={))|}/, 'g');
+    let arr;
+    let root = {type,value,child:[]};
+    stack.push(root);
+    while ((arr = regexp.exec(finalSourceText)) !== null) {
+        //  console.log(`Found ${arr[0]}. Next starts at ${regexp.lastIndex}.`);
+        let text = arr[0];
+        //如果遇到开标签({)，则入栈这个标签
+        if(text!=='}'){
+            let node = {type:'id',value:'root',child:[]}
+            node.type = getType(text);
+            node.value = getValue(text);
+            stack.push(node);
+        }else{
+            let node = stack.pop();
+            let parent = stack[stack.length-1];
+            parent.child.push(node);
+        }
      
-    // }
-    // console.log('stack',stack);
+    }
+    console.log('stack',stack);
     
 
 
-    // return root;
-    return ''
+    return root;
 }
 function getType(text){
     if(text.indexOf('.')!==-1){
