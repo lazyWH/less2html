@@ -16,15 +16,6 @@ function activate(context) {
     let disposable = vscode.commands.registerCommand('extension.sayHello', function () {
         // The code you place here will be executed every time your command is executed
 
-        // Display a message box to the user
-        // vscode.window.showInformationMessage('Hello World!');
-        // editor.edit(function (edit) {
-        //     // itterate through the selections and convert all text to Upper
-        //     for (var x = 0; x < sel.length; x++) {
-
-        //         edit.replace(sel[x], txt.toUpperCase());
-        //     }
-        // });        
         let selectionLessText = getSelectionText();
         let result;
         try {
@@ -45,9 +36,7 @@ function convert(selectionLessText) {
     if (checkBracketsEqual(finalSourceText)) {
         throw new Error('missing some Brackets');
     }
-    let convertResult = convertToTree(finalSourceText);
-
-    return convertResult;
+    return convertToTree(finalSourceText);
 }
 function getSelectionText() {
     let editor = vscode.window.activeTextEditor;
@@ -57,20 +46,23 @@ function getSelectionText() {
     return txt;
 }
 let stack = [];
+let testArr = [];
 function convertToTree(finalSourceText) {
-    //1.class名(.)或id(#)名开头,以{结尾 ,或者less的函数 以.开口，后面带括号\(\) 2.less的&标志开头,以{结尾  3.html标签名 
-     let regexp = new RegExp(/([.#].*?(?={))|(&.*?\w+(?={))|([a-z]+(?={))|}/, 'g');
+    //1.start with class name(.) or id(#)name ,end with { ,or less function start whit (.)，end with (\(\)){  2.less reserved word (&),end with {  3.HTML tag  name 
+    let regexp = new RegExp(/([.#].*?(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
     let arr;
     let root = {type:'id',value:'root',child:[]};
     stack.push(root);
+
     while ((arr = regexp.exec(finalSourceText)) !== null) {
         //  console.log(`Found ${arr[0]}. Next starts at ${regexp.lastIndex}.`);
         let text = arr[0];
-        //如果遇到开标签({)，则入栈这个标签
+        //if not match{，push Matching text to stack
         if(text!=='}'){
             let node = {child:[]}
             node.type = getType(text);
             node.value = getValue(text);
+            testArr.push({text,type:node.type})
             stack.push(node);
         }else{
             let node = stack.pop();
@@ -79,31 +71,40 @@ function convertToTree(finalSourceText) {
         }
      
     }
-    // console.log('stack',stack);
+    console.log('testArr',testArr);
     
 
 
     return root;
 }
 function getType(text){
-    if(text.indexOf('.')!==-1){
-        return 'class'
+    let type ;
+    if(text[0] ==='.'){
+        if(/\(\)/.test(text)){
+            type = 'function'
+        }else{
+            type = 'class'
+        }
+    }else if( text[0] ==='#'){
+        type = 'id'
+    }else if(text[0] ==='&'){
+        type = 'reverse'
+    }else{
+        type = 'tag'
     }
-    return 'id';
+    return type;
 }
 function getValue(text){
+    if(text.length===1) return text;
     return text.slice(1,text.length)
 }
 function wipeBackdrop(selectionLessText) {
-    let result = '';
-    //去除所有注释
+    // Remove all annotations
     let textWithoutAnnotation = selectionLessText.replace(/\/\/.*\n/g, '');
-    //去除所有空格
+    //Remove all spaces
     let textWithoutSpace = textWithoutAnnotation.replace(/\s+/g, '');
-    //去除颜色值，和小数，防止干扰
-    result = textWithoutSpace.replace(/((#\w+)(?=[;\s]))|([.]\d+)/g, '');
-    // let classOrId = /[#.]\w+(?={})/.exec(textWithoutBackdrop)
-    return result;
+    //Remove color values, and decimal
+    return  textWithoutSpace.replace(/((#\w+)(?!{))|([.]\d+)/g, '');
 
 }
 function checkBracketsEqual(finalText) {
@@ -116,5 +117,7 @@ exports.activate = activate;
 
 // this method is called when your extension is deactivated
 function deactivate() {
+    console.log('this is deactivete');
+    
 }
 exports.deactivate = deactivate;
