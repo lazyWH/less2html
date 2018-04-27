@@ -45,7 +45,7 @@ function convert(selectionLessText) {
     if (checkBracketsEqual(finalSourceText)) {
         throw new Error('missing some Brackets');
     }
-    let convertResult = convertToTree(finalSourceText,'id','root');
+    let convertResult = convertToTree(finalSourceText);
 
     return convertResult;
 }
@@ -57,18 +57,18 @@ function getSelectionText() {
     return txt;
 }
 let stack = [];
-function convertToTree(finalSourceText,type,value) {
+function convertToTree(finalSourceText) {
     //1.class名(.)或id(#)名开头,以{结尾 ,或者less的函数 以.开口，后面带括号\(\) 2.less的&标志开头,以{结尾  3.html标签名 
      let regexp = new RegExp(/([.#].*?(?={))|(&.*?\w+(?={))|([a-z]+(?={))|}/, 'g');
     let arr;
-    let root = {type,value,child:[]};
+    let root = {type:'id',value:'root',child:[]};
     stack.push(root);
     while ((arr = regexp.exec(finalSourceText)) !== null) {
         //  console.log(`Found ${arr[0]}. Next starts at ${regexp.lastIndex}.`);
         let text = arr[0];
         //如果遇到开标签({)，则入栈这个标签
         if(text!=='}'){
-            let node = {type:'id',value:'root',child:[]}
+            let node = {child:[]}
             node.type = getType(text);
             node.value = getValue(text);
             stack.push(node);
@@ -79,7 +79,7 @@ function convertToTree(finalSourceText,type,value) {
         }
      
     }
-    console.log('stack',stack);
+    // console.log('stack',stack);
     
 
 
@@ -101,7 +101,7 @@ function wipeBackdrop(selectionLessText) {
     //去除所有空格
     let textWithoutSpace = textWithoutAnnotation.replace(/\s+/g, '');
     //去除颜色值，和小数，防止干扰
-    result = textWithoutSpace.replace(/((#\w+)(?=;))|([.]\d+)/g, '');
+    result = textWithoutSpace.replace(/((#\w+)(?=[;\s]))|([.]\d+)/g, '');
     // let classOrId = /[#.]\w+(?={})/.exec(textWithoutBackdrop)
     return result;
 
