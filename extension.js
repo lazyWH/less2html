@@ -9,34 +9,44 @@ function activate(context) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "less2html" is now active!');
-
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', function () {
-        // The code you place here will be executed every time your command is executed
-
-        let selectionLessText = getSelectionText();
-        let result;
-        try {
-            result = convert(selectionLessText);
-        } catch (e) {
-            console.log(e);
-        }
-        console.log('result',result);
-
-    });
-
+    let disposable = vscode.commands.registerCommand('extension.sayHello', main);
     context.subscriptions.push(disposable);
 }
 
+function main(editor) {
+    // The code you place here will be executed every time your command is executed
 
+    let selectionLessText = getSelectionText();
+    let result;
+    let HTML = '';
+    try {
+        result = convert(selectionLessText);
+        HTML = generateHTML(result,0);
+    } catch (e) {
+        console.log(e);
+    }
+    console.log(HTML);
+    
+    
+}
 function convert(selectionLessText) {
     let finalSourceText = wipeBackdrop(selectionLessText);
     if (checkBracketsEqual(finalSourceText)) {
-        throw new Error('missing some Brackets');
+        vscode.window.showErrorMessage('left Brackets nums is not Equal right Brackets nums,please check selected text')
     }
     return convertToTree(finalSourceText);
+}
+function generateHTML(tree,level){
+    const {child} = tree;
+    if(child.length===0) return `\n${' '.repeat(level*4)}<${tree.nodeName} '${tree.type}'='${tree.value}'></${tree.nodeName}>`;
+    let html = '';
+    for(let i = 0 ;i<child.length;i++){
+        html += generateHTML(child[i],level+1);
+    }
+    return `\n${' '.repeat(level*4)}<${tree.nodeName} '${tree.type}'='${tree.value}'>${html}\n${' '.repeat(level*4)}</${tree.nodeName}>`;
 }
 function getSelectionText() {
     let editor = vscode.window.activeTextEditor;
@@ -52,9 +62,8 @@ function convertToTree(finalSourceText) {
     let regexp = new RegExp(/([.#][-\w()]+(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
     // let regexp = new RegExp(/([.#].*?(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
     let arr;
-    let root = {type:'id',value:'root',child:[]};
+    let root = {type:'id',value:'root',nodeName:'div',child:[]};
     stack.push(root);
-
     while ((arr = regexp.exec(finalSourceText)) !== null) {
         //  console.log(`Found ${arr[0]}. Next starts at ${regexp.lastIndex}.`);
         let text = arr[0];
@@ -63,7 +72,9 @@ function convertToTree(finalSourceText) {
             let node = {child:[]}
             node.type = getType(text);
             node.value = getValue(text);
-            testArr.push(`${text},type:${node.type}`)
+            node.nodeName = node.type==='tag'?text:'div'
+            testArr.push(`${text},type:${node.nodeName}`)
+            
             stack.push(node);
         }else{
             let node = stack.pop();
