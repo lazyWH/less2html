@@ -49,7 +49,8 @@ let stack = [];
 let testArr = [];
 function convertToTree(finalSourceText) {
     //1.start with class name(.) or id(#)name ,end with { ,or less function start whit (.)，end with (\(\)){  2.less reserved word (&),end with {  3.HTML tag  name 
-    let regexp = new RegExp(/([.#].*?(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
+    let regexp = new RegExp(/([.#][-\w()]+(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
+    // let regexp = new RegExp(/([.#].*?(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
     let arr;
     let root = {type:'id',value:'root',child:[]};
     stack.push(root);
@@ -62,7 +63,7 @@ function convertToTree(finalSourceText) {
             let node = {child:[]}
             node.type = getType(text);
             node.value = getValue(text);
-            testArr.push({text,type:node.type})
+            testArr.push(`${text},type:${node.type}`)
             stack.push(node);
         }else{
             let node = stack.pop();
@@ -104,7 +105,8 @@ function wipeBackdrop(selectionLessText) {
     //Remove all spaces
     let textWithoutSpace = textWithoutAnnotation.replace(/\s+/g, '');
     //Remove color values, and decimal
-    return  textWithoutSpace.replace(/((#\w+)(?!{))|([.]\d+)/g, '');
+    // return  textWithoutSpace.replace(/(#\w+(?!{))|([.]\d+)/g, '');
+    return  textWithoutSpace.replace(/([.]\d+)/g, '');
 
 }
 function checkBracketsEqual(finalText) {
