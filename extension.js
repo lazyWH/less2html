@@ -36,6 +36,7 @@ function main(editor) {
     console.log(HTML);
     
     
+    
 }
 function convert(selectionLessText) {
     let finalSourceText = wipeBackdrop(selectionLessText);
@@ -69,15 +70,18 @@ function convertToTree(finalSourceText) {
     let arr;
     let root = {type:'id',value:'root',nodeName:'div',child:[]};
     stack.push(root);
+    const config = vscode.workspace.getConfiguration('less2html');
+    const nodeName = config.get('nodeName')
+    const className = config.get('className')
     while ((arr = regexp.exec(finalSourceText)) !== null) {
         //  console.log(`Found ${arr[0]}. Next starts at ${regexp.lastIndex}.`);
         let text = arr[0];
         //if not match{，push Matching text to stack
         if(text!=='}'){
             let node = {child:[]}
-            node.type = getType(text);
+            node.type = getType(text,className);
             node.value = getValue(text);
-            node.nodeName = node.type==='tag'?text:'div'
+            node.nodeName = node.type==='tag'?text:nodeName
             testArr.push(`${text},type:${node.nodeName}`)
             
             stack.push(node);
@@ -94,13 +98,13 @@ function convertToTree(finalSourceText) {
 
     return root;
 }
-function getType(text){
+function getType(text,className){
     let type ;
     if(text[0] ==='.'){
         if(/\(\)/.test(text)){
             type = 'function'
         }else{
-            type = 'class'
+            type = className
         }
     }else if( text[0] ==='#'){
         type = 'id'

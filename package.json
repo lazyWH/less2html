@@ -26,6 +26,21 @@
                 "when": "editorHasSelection",
                 "command": "extension.sayHello"
             }]
+        }, "configuration": {
+            "type": "object",
+            "title": "less2html Configuration",
+            "properties": {
+                "less2html.nodeName": {
+                    "type": "string",
+                    "default": "div",
+                    "description": "default nodename"
+                },
+                "less2html.className": {
+                    "type": "string",
+                    "default": "class",
+                    "description": "default className"
+                }
+            }
         }
     },
     "scripts": {
