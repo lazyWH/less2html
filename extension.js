@@ -24,7 +24,12 @@ function main(editor) {
     let HTML = '';
     try {
         result = convert(selectionLessText);
-        HTML = generateHTML(result,0);
+        if(result.child.length===1){
+            HTML = generateHTML(result.child[0],0);
+        }else{
+            for(let i = 0;i<result.child.length;i++)
+                HTML += generateHTML(result.child[i],0);
+        }
     } catch (e) {
         console.log(e);
     }
@@ -41,12 +46,12 @@ function convert(selectionLessText) {
 }
 function generateHTML(tree,level){
     const {child} = tree;
-    if(child.length===0) return `\n${' '.repeat(level*4)}<${tree.nodeName} '${tree.type}'='${tree.value}'></${tree.nodeName}>`;
+    if(child.length===0) return `\n${' '.repeat(level*4)}<${tree.nodeName} ${tree.type}='${tree.value}'></${tree.nodeName}>`;
     let html = '';
     for(let i = 0 ;i<child.length;i++){
         html += generateHTML(child[i],level+1);
     }
-    return `\n${' '.repeat(level*4)}<${tree.nodeName} '${tree.type}'='${tree.value}'>${html}\n${' '.repeat(level*4)}</${tree.nodeName}>`;
+    return `\n${' '.repeat(level*4)}<${tree.nodeName} ${tree.type}='${tree.value}'>${html}\n${' '.repeat(level*4)}</${tree.nodeName}>`;
 }
 function getSelectionText() {
     let editor = vscode.window.activeTextEditor;
@@ -59,7 +64,7 @@ let stack = [];
 let testArr = [];
 function convertToTree(finalSourceText) {
     //1.start with class name(.) or id(#)name ,end with { ,or less function start whit (.)，end with (\(\)){  2.less reserved word (&),end with {  3.HTML tag  name 
-    let regexp = new RegExp(/([.#][-\w()]+(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
+    let regexp = new RegExp(/([.#][-\w:()]+(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
     // let regexp = new RegExp(/([.#].*?(?={))|(&.*?(?={))|([a-z]+(?={))|}/, 'g');
     let arr;
     let root = {type:'id',value:'root',nodeName:'div',child:[]};
@@ -108,7 +113,10 @@ function getType(text){
 }
 function getValue(text){
     if(text.length===1) return text;
-    return text.slice(1,text.length)
+    let index = text.indexOf(':');
+    let end = text.length;
+    if(index!==-1) end = index;
+    return text.slice(1,end)
 }
 function wipeBackdrop(selectionLessText) {
     // Remove all annotations
