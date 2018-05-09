@@ -46,12 +46,12 @@ function convert(selectionLessText) {
 }
 function generateHTML(tree,level){
     const {child} = tree;
-    if(child.length===0) return `\n${' '.repeat(level*4)}<${tree.nodeName} ${tree.type}='${tree.value}'></${tree.nodeName}>`;
+    if(child.length===0) return `\n${' '.repeat(level*4)}<${tree.nodeName} ${tree.type!=='tag'?`${tree.type}='${tree.value}'`:''}></${tree.nodeName}>`;
     let html = '';
     for(let i = 0 ;i<child.length;i++){
         html += generateHTML(child[i],level+1);
     }
-    return `\n${' '.repeat(level*4)}<${tree.nodeName} ${tree.type}='${tree.value}'>${html}\n${' '.repeat(level*4)}</${tree.nodeName}>`;
+    return `\n${' '.repeat(level*4)}<${tree.nodeName} ${tree.type!=='tag'?`${tree.type}='${tree.value}'`:''}>${html}\n${' '.repeat(level*4)}</${tree.nodeName}>`;
 }
 function getSelectionText() {
     let editor = vscode.window.activeTextEditor;
